@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Tareas - Sistema de Gestión de Tareas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="fas fa-list"></i>
+                {% if user.role == 'admin' %}Todas las Tareas{% else %}Mis Tareas{% endif %}
+            </h1>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Tarea
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter"></i> Filtros
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        {{ filter_form.search.label(class="form-label") }}
+                        {{ filter_form.search(class="form-control", placeholder="Buscar en título o descripción...") }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ filter_form.status.label(class="form-label") }}
+                        {{ filter_form.status(class="form-select") }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ filter_form.priority.label(class="form-label") }}
+                        {{ filter_form.priority(class="form-select") }}
+                    </div>
+                    {% if user.role == 'admin' %}
+                    <div class="col-md-3">
+                        {{ filter_form.assigned_to.label(class="form-label") }}
+                        {{ filter_form.assigned_to(class="form-select") }}
+                    </div>
+                    {% endif %}
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('tasks.list_tasks') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Tareas -->
+<div class="row">
+    <div class="col-12">
+        {% if tasks %}
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Estado</th>
+                                    <th>Prioridad</th>
+                                    <th>Asignado a</th>
+                                    <th>Fecha Límite</th>
+                                    <th>Creado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr class="{{ 'table-danger' if task.is_overdue() else '' }}">
+                                    <td>
+                                        <div>
+                                            <a href="{{ url_for('tasks.view_task', task_id=task.id) }}"
+                                               class="text-decoration-none fw-bold">
+                                                {{ task.title }}
+                                            </a>
+                                            {% if task.description %}
+                                                <div class="text-muted small">
+                                                    {{ task.description[:100] }}{% if task.description|length > 100 %}...{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if task.status == 'done' else 'warning' }}">
+                                            {% if task.status == 'done' %}
+                                                <i class="fas fa-check"></i> Completada
+                                            {% else %}
+                                                <i class="fas fa-clock"></i> Pendiente
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if task.priority == 'high' else 'warning' if task.priority == 'medium' else 'secondary' }}">
+                                            {% if task.priority == 'high' %}
+                                                <i class="fas fa-exclamation-triangle"></i> Alta
+                                            {% elif task.priority == 'medium' %}
+                                                <i class="fas fa-minus"></i> Media
+                                            {% else %}
+                                                <i class="fas fa-arrow-down"></i> Baja
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle me-1 text-muted"></i>
+                                            {{ task.assignee.name }}
+                                            {% if task.assignee.id == session.user_id %}
+                                                <span class="badge bg-info ms-1">Tú</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if task.due_date %}
+                                            <span class="{{ 'text-danger fw-bold' if task.is_overdue() else '' }}">
+                                                {{ task.due_date.strftime('%d/%m/%Y') }}
+                                                {% if task.is_overdue() %}
+                                                    <i class="fas fa-exclamation-triangle ms-1" title="Vencida"></i>
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Sin fecha</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">
+                                            {{ task.created_at.strftime('%d/%m/%Y') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button"
+                                                    class="btn btn-outline-{{ 'success' if task.status == 'pending' else 'warning' }}"
+                                                    onclick="toggleTask({{ task.id }})"
+                                                    title="{{ 'Marcar como completada' if task.status == 'pending' else 'Marcar como pendiente' }}">
+                                                <i class="fas fa-{{ 'check' if task.status == 'pending' else 'undo' }}"></i>
+                                            </button>
+                                            <a href="{{ url_for('tasks.view_task', task_id=task.id) }}"
+                                               class="btn btn-outline-info" title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if task.created_by == session.user_id or user.role == 'admin' %}
+                                            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
+                                               class="btn btn-outline-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+                                                  class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar esta tarea?')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No se encontraron tareas</h4>
+                    <p class="text-muted">
+                        {% if request.args.get('search') or request.args.get('status') or request.args.get('priority') or request.args.get('assigned_to') %}
+                            No hay tareas que coincidan con los filtros aplicados.
+                        {% else %}
+                            Aún no tienes tareas creadas.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear Nueva Tarea
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleTask(taskId) {
+    fetch(`/tasks/${taskId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al cambiar el estado de la tarea');
+    });
+}
+</script>
+{% endblock %}

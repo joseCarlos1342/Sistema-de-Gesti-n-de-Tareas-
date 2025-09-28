@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} - Sistema de Gestión de Tareas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="fas fa-eye"></i> Detalle de Tarea
+            </h1>
+            <div>
+                <a href="{{ url_for('tasks.list_tasks') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                {% if task.created_by == session.user_id or user.role == 'admin' %}
+                <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h2 class="h4 mb-0">{{ task.title }}</h2>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-{{ 'success' if task.status == 'done' else 'warning' }} fs-6">
+                            {% if task.status == 'done' %}
+                                <i class="fas fa-check"></i> Completada
+                            {% else %}
+                                <i class="fas fa-clock"></i> Pendiente
+                            {% endif %}
+                        </span>
+                        <span class="badge bg-{{ 'danger' if task.priority == 'high' else 'warning' if task.priority == 'medium' else 'secondary' }} fs-6">
+                            {% if task.priority == 'high' %}
+                                <i class="fas fa-exclamation-triangle"></i> Alta
+                            {% elif task.priority == 'medium' %}
+                                <i class="fas fa-minus"></i> Media
+                            {% else %}
+                                <i class="fas fa-arrow-down"></i> Baja
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                {% if task.description %}
+                <div class="mb-4">
+                    <h5>Descripción</h5>
+                    <div class="p-3 bg-light rounded">
+                        {{ task.description|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información General</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Creado por:</strong></td>
+                                <td>
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    {{ task.creator.name }}
+                                    {% if task.creator.id == session.user_id %}
+                                        <span class="badge bg-info">Tú</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Asignado a:</strong></td>
+                                <td>
+                                    <i class="fas fa-user-check me-1"></i>
+                                    {{ task.assignee.name }}
+                                    {% if task.assignee.id == session.user_id %}
+                                        <span class="badge bg-info">Tú</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha límite:</strong></td>
+                                <td>
+                                    {% if task.due_date %}
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <span class="{{ 'text-danger fw-bold' if task.is_overdue() else '' }}">
+                                            {{ task.due_date.strftime('%d/%m/%Y') }}
+                                            {% if task.is_overdue() %}
+                                                <i class="fas fa-exclamation-triangle ms-1" title="Vencida"></i>
+                                            {% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Sin fecha límite</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Fechas</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Creada:</strong></td>
+                                <td>
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ task.created_at.strftime('%d/%m/%Y a las %H:%M') }}
+                                </td>
+                            </tr>
+                            {% if task.updated_at != task.created_at %}
+                            <tr>
+                                <td><strong>Actualizada:</strong></td>
+                                <td>
+                                    <i class="fas fa-edit me-1"></i>
+                                    {{ task.updated_at.strftime('%d/%m/%Y a las %H:%M') }}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Acciones Rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs"></i> Acciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button"
+                            class="btn btn-{{ 'success' if task.status == 'pending' else 'warning' }}"
+                            onclick="toggleTask({{ task.id }})">
+                        <i class="fas fa-{{ 'check' if task.status == 'pending' else 'undo' }}"></i>
+                        {{ 'Marcar como Completada' if task.status == 'pending' else 'Marcar como Pendiente' }}
+                    </button>
+
+                    {% if task.created_by == session.user_id or user.role == 'admin' %}
+                    <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Editar Tarea
+                    </a>
+
+                    <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+                          onsubmit="return confirm('¿Estás seguro de eliminar esta tarea?')">
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-trash"></i> Eliminar Tarea
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        {% if task.is_overdue() %}
+        <div class="card border-danger mt-3">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <h6 class="text-danger">Tarea Vencida</h6>
+                <p class="text-muted mb-0">
+                    Esta tarea venció el {{ task.due_date.strftime('%d/%m/%Y') }}
+                </p>
+            </div>
+        </div>
+        {% elif task.due_date %}
+        <div class="card bg-light mt-3">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar fa-2x text-primary mb-2"></i>
+                <h6>Fecha Límite</h6>
+                <p class="mb-0">
+                    {% set days_left = (task.due_date - now().date()).days %}
+                    {% if days_left == 0 %}
+                        <span class="text-warning fw-bold">Vence hoy</span>
+                    {% elif days_left == 1 %}
+                        <span class="text-warning">Vence mañana</span>
+                    {% elif days_left > 0 %}
+                        <span class="text-muted">{{ days_left }} días restantes</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleTask(taskId) {
+    fetch(`/tasks/${taskId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al cambiar el estado de la tarea');
+    });
+}
+</script>
+{% endblock %}

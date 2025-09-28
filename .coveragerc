@@ -1,0 +1,30 @@
+[run]
+source = app
+omit =
+    */venv/*
+    */env/*
+    */tests/*
+    */migrations/*
+    app/__pycache__/*
+    app/*/__pycache__/*
+    run.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+directory = htmlcov
+title = Sistema de Gestión de Tareas - Reporte de Cobertura
+
+[xml]
+output = coverage.xml

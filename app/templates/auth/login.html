@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión - Sistema de Gestión de Tareas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-sign-in-alt fa-3x text-primary mb-3"></i>
+                    <h2 class="h4">Iniciar Sesión</h2>
+                    <p class="text-muted">Accede a tu cuenta</p>
+                </div>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="mb-0">¿No tienes cuenta?</p>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-link">
+                        Registrarse aquí
+                    </a>
+                </div>
+
+                <!-- Información de usuario demo -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6 class="fw-bold">Usuario Demo:</h6>
+                    <p class="mb-1"><strong>Admin:</strong> admin@example.com / admin123</p>
+                    <small class="text-muted">Puedes usar este usuario para probar el sistema</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
