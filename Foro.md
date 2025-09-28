@@ -298,26 +298,43 @@ El plan de pruebas implementado proporciona una base sólida para asegurar la ca
 
 ## Cronograma y Responsabilidades
 
-**Sprint 1 (Semanas 1-2):**
-- Setup de entorno y estructura de pruebas
-- Implementación de pruebas unitarias core
-- **Responsable:** [Tester Principal + Desarrollador Backend]
+### Semana de Desarrollo (22/09/2024 - 27/09/2024)
 
-**Sprint 2 (Semanas 3-4):**
-- Pruebas de integración y endpoints
-- Configuración de CI/CD pipeline
-- **Responsable:** [DevOps + Desarrollador Backend]
+**Día 1 (22/09) - Setup y Pruebas Unitarias:**
+- ✅ Configuración inicial del entorno de testing
+- ✅ Implementación de 54 pruebas unitarias
+- ✅ Setup de fixtures y configuración SQLAlchemy
+- **Responsable:** Jose Carlos Gomez Rodriguez
 
-**Sprint 3 (Semanas 5-6):**
-- Pruebas de aceptación con Selenium
-- Documentación de casos de prueba
-- **Responsable:** [Tester Principal + Desarrollador Frontend]
+**Día 2 (23/09) - Pruebas de Integración:**
+- ✅ Desarrollo de 48 pruebas de integración
+- ✅ Testing de endpoints y flujos completos
+- ✅ Integración con base de datos de pruebas
+- **Responsable:** Kevin Sebastian Vargas Ariza
 
-**Sprint 4 (Semanas 7-8):**
-- Revisión de cobertura y optimización
-- Pruebas manuales exploratorias
-- Entrega de reportes finales
-- **Responsable:** [Todo el equipo]
+**Día 3 (24/09) - Automatización y CI/CD:**
+- ✅ Configuración de GitHub Actions workflows
+- ✅ Setup de pruebas automatizadas en pipeline
+- ✅ Configuración de reportes de cobertura
+- **Responsable:** Jose Carlos Gomez Rodriguez
+
+**Día 4 (25/09) - Pruebas de Aceptación:**
+- ✅ Implementación de 15 pruebas E2E con Selenium
+- ✅ Page Object Pattern y casos de usuario
+- ✅ Testing de flujos críticos del sistema
+- **Responsable:** Kevin Sebastian Vargas Ariza
+
+**Día 5 (26/09) - Optimización y Documentación:**
+- ✅ Optimización para alcanzar 90% de cobertura
+- ✅ Documentación completa del plan de pruebas
+- ✅ Corrección de fallos y refinamiento
+- **Responsable:** Ambos integrantes
+
+**Día 6 (27/09) - Entrega Final:**
+- ✅ Revisión final y preparación de entregables
+- ✅ Documentación de foro y respuestas académicas
+- ✅ Subida a repositorio GitHub con CI/CD funcional
+- **Responsable:** Todo el equipo
 
 ---
 
