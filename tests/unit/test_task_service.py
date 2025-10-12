@@ -294,6 +294,26 @@ class TestTaskService:
             assert is_valid is True
             assert errors == []
 
+    def test_validate_task_data_due_date_today(self, app):
+        """Test task data validation with due date as today."""
+        with app.app_context():
+            is_valid, errors = TaskService.validate_task_data(
+                title='Task for Today',
+                due_date=date.today()
+            )
+            assert is_valid is True
+            assert not errors
+
+    def test_validate_task_data_due_date_today_datetime(self, app):
+        """Test task data validation with due date as today (datetime object)."""
+        with app.app_context():
+            is_valid, errors = TaskService.validate_task_data(
+                title='Task for Today',
+                due_date=datetime.now()
+            )
+            assert is_valid is True
+            assert not errors
+
     def test_validate_task_data_empty_title(self, app):
         """Test task data validation with empty title."""
         with app.app_context():

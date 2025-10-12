@@ -154,7 +154,10 @@ class TaskService:
         if title and len(title) > 200:
             errors.append("El título no puede exceder 200 caracteres")
 
-        if due_date and due_date < date.today():
-            errors.append("La fecha límite no puede ser anterior a hoy")
+        if due_date:
+            if isinstance(due_date, datetime):
+                due_date = due_date.date()
+            if due_date < date.today():
+                errors.append("La fecha límite no puede ser anterior a hoy")
 
         return len(errors) == 0, errors
